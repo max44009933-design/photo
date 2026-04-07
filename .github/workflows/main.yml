@@ -1,0 +1,48 @@
+name: iOS IPA Build
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: 📥 下載專案程式碼
+      uses: actions/checkout@v4
+
+    - name: 🍏 設定 Xcode 環境
+      run: sudo xcode-select -switch /Applications/Xcode.app
+
+    - name: 🛠️ 安裝 XcodeGen 並生成專案
+      run: |
+        brew install xcodegen
+        xcodegen generate
+
+    - name: 🔨 編譯無簽名 App
+      run: |
+        mkdir -p build
+        xcodebuild clean build \
+          -project MyTrackerApp.xcodeproj \
+          -scheme MyTrackerApp \
+          -configuration Release \
+          -sdk iphoneos \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          CONFIGURATION_BUILD_DIR=$(pwd)/build
+
+    - name: 📦 打包成 IPA
+      run: |
+        mkdir -p Payload
+        mv build/*.app Payload/
+        zip -r MyTrackerApp.ipa Payload
+
+    - name: 📤 輸出 IPA 檔案
+      uses: actions/upload-artifact@v4
+      with:
+        name: MyTrackerApp-IPA
+        path: MyTrackerApp.ipa
+        retention-days: 3
