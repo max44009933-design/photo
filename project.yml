@@ -5,7 +5,7 @@ targets:
   MyTrackerApp:
     type: application
     platform: iOS
-    deploymentTarget: "15.0"
+    deploymentTarget: "16.0" # 👈 這裡改成 16.0 啦！
     sources: [Sources]
     info:
       path: Info.plist
